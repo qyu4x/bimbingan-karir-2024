@@ -2,9 +2,9 @@
 
 namespace App\Helper;
 
-enum Role : string
+class Role
 {
-    case ADMIN = 'ADMIN';
-    case PATIENT = 'PASIEN';
-    case DOCTOR = 'DOKTER';
+    const ADMIN = 'ADMIN';
+    const PATIENT = 'PASIEN';
+    const DOCTOR = 'DOKTER';
 }
