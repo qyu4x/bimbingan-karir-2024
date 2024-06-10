@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
+use App\Helper\Role;
 use App\Models\Dokter;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -31,6 +32,14 @@ class EditUser extends EditRecord
     protected function afterSave(): void
     {
         $user = $this->record;
+
+        // update behaviour of session check in laravel.
+        if ($user->role === Role::DOCTOR) {
+            session()->put([
+                'password_hash_web' => $user->password
+            ]);
+        }
+
         $doctor = Dokter::where('id_user', $user->id)->first();
         if ($doctor) {
             $doctor->update([

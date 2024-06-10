@@ -16,3 +16,6 @@ Route::middleware([\App\Http\Middleware\AuthMiddleware::class])->group(function 
         Route::post('/register', [\App\Http\Controllers\PasienController::class, 'doRegister']);
     });
 });
+
+//Route::redirect('/login', '/', 301)
+//    ->name('login');

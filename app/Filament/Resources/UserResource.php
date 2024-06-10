@@ -39,7 +39,8 @@ class UserResource extends Resource
                 // doctor field
                 Forms\Components\Select::make('id_poli')
                     ->label('Poli')
-                    ->options(Poli::all()->pluck('nama', 'id')),
+                    ->options(Poli::all()->pluck('nama', 'id'))
+                    ->required(),
                 Forms\Components\TextInput::make('no_hp')->required(),
                 Forms\Components\TextInput::make('alamat')->required(),
             ]);
@@ -48,32 +49,64 @@ class UserResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('email'),
-                Tables\Columns\TextColumn::make('role'),
-                Tables\Columns\TextColumn::make('dokter.alamat')
-                    ->label('Address'),
-                Tables\Columns\TextColumn::make('dokter.no_hp')
-                    ->label('Phone Number'),
-                Tables\Columns\TextColumn::make('dokter.poli.nama'),
-            ])
-            ->filters([
-                Tables\Filters\QueryBuilder::make()
-                    ->query(function ($query) {
-                        return $query->where('role', '=', Role::DOCTOR);
-                    })
-            ])
-            ->actions([
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+        $currentUser = auth()->user();
+
+        if ($currentUser->role === Role::DOCTOR) {
+            return $table
+                ->columns([
+                    Tables\Columns\TextColumn::make('name'),
+                    Tables\Columns\TextColumn::make('email'),
+                    Tables\Columns\TextColumn::make('role'),
+                    Tables\Columns\TextColumn::make('dokter.alamat')
+                        ->label('Address'),
+                    Tables\Columns\TextColumn::make('dokter.no_hp')
+                        ->label('Phone Number'),
+                    Tables\Columns\TextColumn::make('dokter.poli.nama'),
+                ])
+                ->filters([
+                    Tables\Filters\QueryBuilder::make()
+                        ->query(function ($query) use ($currentUser) {
+                            return $query->where('role', '=', Role::DOCTOR)
+                                ->where('id', '=', $currentUser->id);
+                        })
+                ])
+                ->actions([
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\EditAction::make(),
+                ])
+                ->bulkActions([
+                    Tables\Actions\BulkActionGroup::make([
+                        Tables\Actions\DeleteBulkAction::make(),
+                    ]),
+                ]);
+        } else {
+            return $table
+                ->columns([
+                    Tables\Columns\TextColumn::make('name'),
+                    Tables\Columns\TextColumn::make('email'),
+                    Tables\Columns\TextColumn::make('role'),
+                    Tables\Columns\TextColumn::make('dokter.alamat')
+                        ->label('Address'),
+                    Tables\Columns\TextColumn::make('dokter.no_hp')
+                        ->label('Phone Number'),
+                    Tables\Columns\TextColumn::make('dokter.poli.nama'),
+                ])
+                ->filters([
+                    Tables\Filters\QueryBuilder::make()
+                        ->query(function ($query) {
+                            return $query->where('role', '=', Role::DOCTOR);
+                        })
+                ])
+                ->actions([
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\EditAction::make(),
+                ])
+                ->bulkActions([
+                    Tables\Actions\BulkActionGroup::make([
+                        Tables\Actions\DeleteBulkAction::make(),
+                    ]),
+                ]);
+        }
     }
 
     public static function getRelations(): array
