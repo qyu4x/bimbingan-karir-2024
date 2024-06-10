@@ -28,4 +28,22 @@ class Pasien extends Model
     {
         return $this->belongsTo(User::class, 'id_user', 'id');
     }
+
+    public static function generateMedicalRecordNumber()
+    {
+        $datePart = now()->format('Ymd');
+        $count = self::whereDate('created_at', now()->format('Y-m-d'))->count() + 1;
+        $number = str_pad($count, 4, '0', STR_PAD_LEFT);
+
+        return "{$datePart}-{$number}";
+    }
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($patient) {
+            $patient->user()->delete();
+        });
+    }
 }

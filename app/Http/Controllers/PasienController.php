@@ -46,19 +46,6 @@ class PasienController extends Controller
             ]);
     }
 
-    private function generateRandomRM(): string
-    {
-        $length = 6;
-        $characters = '0123456789';
-        $randomToken = '';
-
-        for ($i = 0; $i < $length; $i++) {
-            $randomToken .= $characters[rand(0, strlen($characters) - 1)];
-        }
-
-        return $randomToken;
-    }
-
     public function doRegister(PasienRegisterRequest $request) : Response | RedirectResponse
     {
         $data = $request->validated();
@@ -81,7 +68,7 @@ class PasienController extends Controller
             ]);
         }
 
-        $data['no_rm']  = $this->generateRandomRM();
+        $data['no_rm']  = Pasien::generateMedicalRecordNumber();
 
         $data['password'] = Hash::make($data['password']);
 
