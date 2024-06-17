@@ -6,6 +6,7 @@ use App\Filament\Resources\PasienResource;
 use App\Models\Pasien;
 use App\Models\User;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Hash;
 
@@ -22,6 +23,8 @@ class CreatePasien extends CreateRecord
             'password' => Hash::make($data['password'])
         ];
 
+        $this->checkPatientAlreadyExists($userData);
+
         $user = new User($userData);
         $user->save();
 
@@ -29,5 +32,31 @@ class CreatePasien extends CreateRecord
         $data['no_rm'] = Pasien::generateMedicalRecordNumber();
 
         return $data;
+//        try {
+//            $this->checkPatientAlreadyExists($userData);
+//
+//            $user = new User($userData);
+//            $user->save();
+//
+//            $data['id_user'] = $user->id;
+//            $data['no_rm'] = Pasien::generateMedicalRecordNumber();
+//
+//            return $data;
+//        }catch (\Exception $exception) {
+//            return Notification::make()
+//                ->title($exception->getMessage())
+//                ->danger()
+//                ->seconds(5)
+//                ->persistent();
+//        }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    function checkPatientAlreadyExists(array $userData) : void {
+        if (User::query()->where('email', $userData['email'])->first()) {
+            throw new \Exception('Email Already Registered');
+        }
     }
 }

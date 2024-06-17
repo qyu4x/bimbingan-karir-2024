@@ -13,7 +13,7 @@ class DaftarPoli extends Model
 
     protected $fillable = [
         'id_pasien',
-        'id_jadwal',
+        'id_jadwal_periksa',
         'keluhan',
         'no_antrian'
     ];
