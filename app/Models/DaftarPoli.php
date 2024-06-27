@@ -15,7 +15,8 @@ class DaftarPoli extends Model
         'id_pasien',
         'id_jadwal_periksa',
         'keluhan',
-        'no_antrian'
+        'no_antrian',
+        'status_periksa'
     ];
 
     public function jadwal_periksas(): BelongsTo

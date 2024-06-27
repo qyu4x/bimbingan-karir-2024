@@ -19,6 +19,7 @@ class CreateDaftarPoli extends CreateRecord
         $sequence = DaftarPoli::whereDate('created_at', now()->format('Y-m-d'))->count() + 1;
 
         $data['no_antrian'] = $sequence;
+        $data['status_periksa'] = false;
         $data['id_pasien'] = auth()->user()->pasien->id;
 
         return $data;

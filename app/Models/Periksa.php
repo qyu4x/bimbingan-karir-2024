@@ -8,14 +8,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Periksa extends Model
+class  Periksa extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'id_daftar_poli',
-        'tgl_periksa',
-        'catatan'
+        'tanggal_periksa',
+        'catatan',
+        'biaya_periksa'
     ];
 
     public function daftar_polis(): BelongsTo

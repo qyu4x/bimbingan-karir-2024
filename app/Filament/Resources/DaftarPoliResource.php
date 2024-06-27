@@ -15,12 +15,14 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\CheckboxColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use NunoMaduro\Collision\Adapters\Phpunit\State;
 
 class DaftarPoliResource extends Resource
@@ -77,50 +79,104 @@ class DaftarPoliResource extends Resource
         return auth()->user()->pasien->id;
     }
 
+    public static function getDoctorId(): int
+    {
+        return auth()->user()->dokter->id;
+    }
+
     public static function table(Table $table): Table
     {
         if (auth()->user()->role === Role::PATIENT) {
+            return $table
+                ->query(fn() => DaftarPoli::where('id_pasien', self::getPatientId()))
+                ->columns([
+                    TextColumn::make('pasiens.user.name')
+                        ->label('Pasien'),
+                    TextColumn::make('pasiens.no_rm')
+                        ->label('No RM'),
+                    TextColumn::make('keluhan'),
+                    TextColumn::make('no_antrian')
+                        ->label('Nomer Antrian'),
+                    CheckboxColumn::make('status_periksa')
+                        ->label('Status Periksa'),
+                    TextColumn::make('jadwal_periksas.dokter.user.name')
+                        ->label('Dokter'),
+                    TextColumn::make('jadwal_periksas.dokter.poli.nama')
+                        ->label('Poli'),
+                    TextColumn::make('jadwal_periksas.hari')
+                        ->label('Hari'),
+                    TextColumn::make('jadwal_periksas.jadwal_mulai')
+                        ->label('Jam Mulai')
+                        ->formatStateUsing(function ($state) {
+                            return Carbon::parse($state)->format('h:i A');
+                        }),
+                    TextColumn::make('jadwal_periksas.jadwal_selesai')
+                        ->label('Jam Selesai')
+                        ->formatStateUsing(function ($state) {
+                            return Carbon::parse($state)->format('h:i A');
+                        }),
 
+                ])
+                ->filters([
+                    //
+                ])
+                ->actions([
+                    Tables\Actions\EditAction::make(),
+                ])
+                ->bulkActions([
+                    Tables\Actions\BulkActionGroup::make([
+                        Tables\Actions\DeleteBulkAction::make(),
+                    ]),
+                ]);
+        } else  {
+            $doctorId = self::getDoctorId();
+
+            return $table
+                ->query(fn() => DaftarPoli::whereHas('jadwal_periksas', function ($query) use ($doctorId) {
+                    $query->where('id_dokter', $doctorId);
+                }))
+                ->columns([
+                    TextColumn::make('pasiens.user.name')
+                        ->label('Pasien')
+                        ->searchable(),
+                    TextColumn::make('pasiens.no_rm')
+                        ->label('No RM'),
+                    TextColumn::make('keluhan'),
+                    TextColumn::make('no_antrian')
+                        ->label('Nomer Antrian'),
+                    CheckboxColumn::make('status_periksa')
+                        ->label('Status Periksa'),
+                    TextColumn::make('jadwal_periksas.dokter.user.name')
+                        ->label('Dokter'),
+                    TextColumn::make('jadwal_periksas.dokter.poli.nama')
+                        ->label('Poli'),
+                    TextColumn::make('jadwal_periksas.hari')
+                        ->label('Hari'),
+                    TextColumn::make('jadwal_periksas.jadwal_mulai')
+                        ->label('Jam Mulai')
+                        ->formatStateUsing(function ($state) {
+                            return Carbon::parse($state)->format('h:i A');
+                        }),
+                    TextColumn::make('jadwal_periksas.jadwal_selesai')
+                        ->label('Jam Selesai')
+                        ->formatStateUsing(function ($state) {
+                            return Carbon::parse($state)->format('h:i A');
+                        }),
+
+                ])
+                ->filters([
+                    //
+                ])
+                ->actions([
+                    //Tables\Actions\EditAction::make(),
+                ])
+                ->bulkActions([
+                    Tables\Actions\BulkActionGroup::make([
+                        Tables\Actions\DeleteBulkAction::make(),
+                    ]),
+                ]);
         }
-        return $table
-            ->query(fn() => DaftarPoli::where('id_pasien', self::getPatientId()))
-            ->columns([
-                TextColumn::make('pasiens.user.name')
-                    ->label('Pasien'),
-                TextColumn::make('pasiens.no_rm')
-                    ->label('No RM'),
-                TextColumn::make('keluhan'),
-                TextColumn::make('no_antrian')
-                    ->label('Nomer Antrian'),
-                TextColumn::make('jadwal_periksas.dokter.user.name')
-                    ->label('Dokter'),
-                TextColumn::make('jadwal_periksas.dokter.poli.nama')
-                    ->label('Poli'),
-                TextColumn::make('jadwal_periksas.hari')
-                    ->label('Hari'),
-                TextColumn::make('jadwal_periksas.jadwal_mulai')
-                    ->label('Jam Mulai')
-                    ->formatStateUsing(function ($state) {
-                        return Carbon::parse($state)->format('h:i A');
-                    }),
-                TextColumn::make('jadwal_periksas.jadwal_selesai')
-                    ->label('Jam Selesai')
-                    ->formatStateUsing(function ($state) {
-                        return Carbon::parse($state)->format('h:i A');
-                    }),
 
-            ])
-            ->filters([
-                //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
     }
 
     public static function getRelations(): array
